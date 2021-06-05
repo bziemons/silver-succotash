@@ -21,8 +21,12 @@ _global_script_class_icons={
 [application]
 
 config/name="TraktUi"
-run/main_scene="res://DeviceAuth.tscn"
+run/main_scene="res://Main.tscn"
 config/icon="res://icon.png"
+
+[display]
+
+window/dpi/allow_hidpi=true
 
 [gdnative]
 
