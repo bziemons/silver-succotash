@@ -1,17 +1,10 @@
 extends Control
 
-const TRAKT_API_URL = "https://private-anon-a00430a8fb-trakt.apiary-mock.com"
-const TRAKT_DEVICE_CODE_URL = TRAKT_API_URL + "/oauth/device/code"
-const TRAKT_DEVICE_POLL_URL = TRAKT_API_URL + "/oauth/device/token"
-const DEVICE_CLIENT_ID = "ca99b720a40e4a57f2f7178165c35737aef40632ccd84ce20a0f4be360362c87"
-const DEVICE_CLIENT_SECRET = "935d83556b6c3f4c0dacd1d04723b7d59d66ec698a07d9c30da0f1f79a86408a"
+const TRAKT_DEVICE_CODE_URL = Auto.TRAKT_API_URL + "/oauth/device/code"
+const TRAKT_DEVICE_POLL_URL = Auto.TRAKT_API_URL + "/oauth/device/token"
 
-onready var api_access = get_node("APIAccess")
-onready var poll_timer = get_node("PollTimer")
-onready var expiry_timer = get_node("ExpiryTimer")
-onready var margin_container = get_node("MarginContainer")
 onready var label = get_node("MarginContainer/VBoxContainer/Label")
-onready var spinner_container = get_node("MarginContainer/VBoxContainer/SpinnerCenter")
+onready var spinner = get_node("MarginContainer/VBoxContainer/SpinnerCenter")
 onready var link = get_node("MarginContainer/VBoxContainer/LinkCenter/Link")
 
 # populated in Main.gd
@@ -28,10 +21,10 @@ var polling
 
 func reset():
 	polling = false
-	poll_timer.stop()
-	expiry_timer.stop()
+	$PollTimer.stop()
+	$ExpiryTimer.stop()
 	link.hide()
-	spinner_container.hide()
+	spinner.hide()
 	label.text = ""
 
 
@@ -45,8 +38,8 @@ func _ready():
 			max_x = max(max_x, child.rect_size.x + child.margin_left)
 			max_y = max(max_y, child.rect_size.y + child.margin_top)
 	OS.window_borderless = false
-	OS.window_size = Vector2(max_x + margin_container.margin_left,
-							 max_y + margin_container.margin_top)
+	OS.window_size = Vector2(max_x + $MarginContainer.margin_left,
+							 max_y + $MarginContainer.margin_top)
 	OS.window_resizable = false
 	OS.center_window()
 	reset()
@@ -54,11 +47,12 @@ func _ready():
 
 func _on_auth_pressed():
 	reset()
-	var data = {"client_id": DEVICE_CLIENT_ID}
-	var status = api_access.request(TRAKT_DEVICE_CODE_URL, [], true, HTTPClient.METHOD_POST,
-								   to_json(data))
+	var data = {"client_id": Auto.DEVICE_CLIENT_ID}
+	var headers = ["Content-Type: application/json"]
+	var status = $APIAccess.request(TRAKT_DEVICE_CODE_URL, headers, true,
+									HTTPClient.METHOD_POST, to_json(data))
 	if status == OK:
-		spinner_container.show()
+		spinner.show()
 	else:
 		push_error("An error occurred in the HTTP request: {0}".format([status]))
 
@@ -102,12 +96,12 @@ func _on_api_access_request_completed(result, response_code, _headers, body):
 
 func _device_poll_start(intervalIn):
 	polling = true
-	poll_timer.wait_time = intervalIn
-	poll_timer.one_shot = false
-	poll_timer.start()
-	expiry_timer.wait_time = expires_in
-	expiry_timer.one_shot = true
-	expiry_timer.start()
+	$PollTimer.wait_time = intervalIn
+	$PollTimer.one_shot = false
+	$PollTimer.start()
+	$ExpiryTimer.wait_time = expires_in
+	$ExpiryTimer.one_shot = true
+	$ExpiryTimer.start()
 	link.text = verification_url
 	link.show()
 	label.text = user_code
@@ -123,11 +117,12 @@ func _on_link_pressed():
 func _on_poll_timer_timeout():
 	var data = {
 		"code": device_code,
-		"client_id": DEVICE_CLIENT_ID,
-		"client_secret": DEVICE_CLIENT_SECRET,
+		"client_id": Auto.DEVICE_CLIENT_ID,
+		"client_secret": Auto.DEVICE_CLIENT_SECRET,
 	}
-	var status = api_access.request(TRAKT_DEVICE_POLL_URL, [], true, HTTPClient.METHOD_POST,
-								   to_json(data))
+	var headers = ["Content-Type: application/json"]
+	var status = $APIAccess.request(TRAKT_DEVICE_POLL_URL, headers, true,
+									HTTPClient.METHOD_POST, to_json(data))
 	if status != OK:
 		push_error("An error occurred in the HTTP request: {0}".format([status]))
 

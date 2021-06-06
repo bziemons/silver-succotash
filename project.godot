@@ -24,6 +24,10 @@ config/name="TraktUi"
 run/main_scene="res://Main.tscn"
 config/icon="res://icon.png"
 
+[autoload]
+
+Auto="*res://Auto.gd"
+
 [display]
 
 window/dpi/allow_hidpi=true

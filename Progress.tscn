@@ -1,0 +1,32 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://Progress.gd" type="Script" id=1]
+
+[node name="Progress" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource( 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="APIAccess" type="HTTPRequest" parent="."]
+
+[node name="ScrollContainer" type="ScrollContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="GridContainer" type="GridContainer" parent="ScrollContainer"]
+
+[node name="ProgressBox" type="Control" parent="."]
+margin_right = 40.0
+margin_bottom = 40.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[connection signal="request_completed" from="APIAccess" to="." method="_on_api_access_request_completed"]
+[connection signal="resized" from="ScrollContainer" to="." method="_on_scroll_container_resized"]
