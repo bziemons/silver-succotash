@@ -10,8 +10,6 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="SyncHistoryAccess" type="HTTPRequest" parent="."]
-
 [node name="Label" type="Label" parent="."]
 margin_right = 1024.0
 margin_bottom = 600.0
@@ -19,5 +17,3 @@ autowrap = true
 __meta__ = {
 "_edit_use_anchors_": false
 }
-
-[connection signal="request_completed" from="SyncHistoryAccess" to="." method="_on_sync_history_request_completed"]

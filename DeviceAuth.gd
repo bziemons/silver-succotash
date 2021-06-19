@@ -1,7 +1,7 @@
 extends Control
 
-const TRAKT_DEVICE_CODE_URL = Auto.TRAKT_API_URL + "/oauth/device/code"
-const TRAKT_DEVICE_POLL_URL = Auto.TRAKT_API_URL + "/oauth/device/token"
+const TRAKT_DEVICE_CODE_URL = Global.TRAKT_API_URL + "/oauth/device/code"
+const TRAKT_DEVICE_POLL_URL = Global.TRAKT_API_URL + "/oauth/device/token"
 
 onready var label = get_node("MarginContainer/VBoxContainer/Label")
 onready var spinner = get_node("MarginContainer/VBoxContainer/SpinnerCenter")
@@ -28,6 +28,15 @@ func reset():
 	label.text = ""
 
 
+func home():
+	reset()
+	get_tree().root.add_child(main)
+	get_tree().current_scene = main
+	get_tree().root.remove_child(self)
+	self.queue_free()
+	main.initialize()
+
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	assert(main != null)
@@ -47,7 +56,7 @@ func _ready():
 
 func _on_auth_pressed():
 	reset()
-	var data = {"client_id": Auto.DEVICE_CLIENT_ID}
+	var data = {"client_id": Global.DEVICE_CLIENT_ID}
 	var headers = ["Content-Type: application/json"]
 	var status = $APIAccess.request(TRAKT_DEVICE_CODE_URL, headers, true,
 									HTTPClient.METHOD_POST, to_json(data))
@@ -73,8 +82,7 @@ func _on_api_access_request_completed(result, response_code, _headers, body):
 				main_auth.scope = response["scope"]
 				main_auth.created_at = response["created_at"]
 				main.save_data()
-				reset()
-				switch_to_main()
+				home()
 			else:
 				push_error(
 					"Error in api access poll response with code: {0}".format([response_code]))
@@ -117,8 +125,8 @@ func _on_link_pressed():
 func _on_poll_timer_timeout():
 	var data = {
 		"code": device_code,
-		"client_id": Auto.DEVICE_CLIENT_ID,
-		"client_secret": Auto.DEVICE_CLIENT_SECRET,
+		"client_id": Global.DEVICE_CLIENT_ID,
+		"client_secret": Global.DEVICE_CLIENT_SECRET,
 	}
 	var headers = ["Content-Type: application/json"]
 	var status = $APIAccess.request(TRAKT_DEVICE_POLL_URL, headers, true,
@@ -131,11 +139,3 @@ func _on_expiry_timer_timeout():
 	reset()
 	label.text = "Authentication timed out.\nPress the button again."
 	label.show()
-
-
-func switch_to_main():
-	main.initialize()
-	get_tree().root.add_child(main)
-	get_tree().current_scene = main
-	get_tree().root.remove_child(self)
-	self.queue_free()

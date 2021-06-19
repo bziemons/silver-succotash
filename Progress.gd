@@ -1,12 +1,20 @@
 extends Control
 
-const TRAKT_API_WATCHED_SHOW = Auto.TRAKT_API_URL + "/shows/{id}/progress/watched"
+const TRAKT_API_WATCHED_SHOW = Global.TRAKT_API_URL + "/shows/{id}/progress/watched"
 const PROGRESS_SHOW_MIN_SIZE = 180.0
 const PROGRESS_SHOW_MAX_SIZE = 200.0
 
 
 # populated in Main.gd
 var main
+
+
+func home():
+	get_tree().root.add_child(main)
+	get_tree().current_scene = main
+	get_tree().root.remove_child(self)
+	self.queue_free()
+	main.initialize()
 
 
 func _ready():
@@ -20,11 +28,10 @@ func _ready():
 	var headers = [
 		"Accept: application/json",
 		"Authorization: Bearer " + main.auth.access_token,
-		"trakt-api-version: " + str(Auto.TRAKT_API_VERSION),
-		"trakt-api-key: " + Auto.DEVICE_CLIENT_ID,
+		"trakt-api-version: " + str(Global.TRAKT_API_VERSION),
+		"trakt-api-key: " + Global.DEVICE_CLIENT_ID,
 	]
-	$APIAccess.request(TRAKT_API_WATCHED_SHOW.format({"id": 123}), headers, true,
-					   HTTPClient.METHOD_GET)
+	# $APIAccess.request(TRAKT_API_WATCHED_SHOW.format({"id": 123}), headers, true, HTTPClient.METHOD_GET)
 
 
 func _on_api_access_request_completed(result, response_code, headers, body):
